@@ -4,6 +4,7 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
+import plotly.graph_objs as go
 
 app = dash.Dash()
 
@@ -18,6 +19,12 @@ df = pd.read_csv(
     'c78bf172206ce24f77d6363a2d754b59/raw/'
     'c353e8ef842413cae56ae3920b8fd78468aa4cb2/'
     'usa-agricultural-exports-2011.csv')
+
+df2 = pd.read_csv(
+    'https://gist.githubusercontent.com/chriddyp/' +
+    '5d1ea79569ed194d432e56108a04d188/raw/' +
+    'a9f9e8076b837d541398e999dcbac2b2826a81f8/'+
+    'gdp-life-exp-2007.csv')
 
 def generate_table(dataframe, max_rows=10):
     return html.Table(
@@ -71,12 +78,39 @@ app.layout = html.Div(children=[
         }
     ),
 
-    html.Div(
-        [
-            html.H4('US Agriculture Exports (2011)'),
-            generate_table(df)
-        ]
-    )
+    # html.Div(
+    #     [
+    #         html.H4('US Agriculture Exports (2011)'),
+    #         generate_table(df)
+    #     ]
+    # ),
+
+    dcc.Graph(
+        id='life-exp-vs-gdp',
+        figure={
+            'data': [
+                go.Scatter(
+                    x=df2[df2['continent'] == i]['gdp per capita'],
+                    y=df2[df2['continent'] == i]['life expectancy'],
+                    text=df2[df2['continent'] == i]['country'],
+                    mode='markers',
+                    opacity=0.7,
+                    marker={
+                        'size': 15,
+                        'line': {'width': 0.5, 'color': 'white'}
+                    },
+                    name=i
+                ) for i in df2.continent.unique()
+            ],
+            'layout': go.Layout(
+                xaxis={'type': 'log', 'title': 'GDP Per Capita'},
+                yaxis={'title': 'Life Expectancy'},
+                margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
+                legend={'x': 0, 'y': 1},
+                hovermode='closest'
+            )
+        }
+    ),
 
     # html.Div(
     #     [
